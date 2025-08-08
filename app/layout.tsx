@@ -4,9 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
-import ClientOnly from '@/components/common/ClientOnly';
 import './globals.css';
-import PerformanceOptimizer from '@/components/common/PerformanceOptimizer';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -98,51 +96,13 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // Completely disable service workers
+              // Disable service workers
               if ('serviceWorker' in navigator) {
-                // Override the register method to prevent new registrations
-                const originalRegister = navigator.serviceWorker.register;
-                navigator.serviceWorker.register = function() {
-                  console.log('Service worker registration blocked');
-                  return Promise.reject(new Error('Service workers are disabled'));
-                };
-                
-                // Unregister all existing service workers
                 navigator.serviceWorker.getRegistrations().then(function(registrations) {
                   for(let registration of registrations) {
                     registration.unregister();
-                    console.log('Service worker unregistered');
                   }
                 });
-                
-                // Clear all caches
-                if ('caches' in window) {
-                  caches.keys().then(function(names) {
-                    for (let name of names) {
-                      caches.delete(name);
-                      console.log('Cache deleted:', name);
-                    }
-                  });
-                }
-                
-                // Prevent new service workers from registering
-                navigator.serviceWorker.addEventListener('message', function(event) {
-                  if (event.data && event.data.type === 'SKIP_WAITING') {
-                    event.preventDefault();
-                  }
-                });
-              }
-              
-              // Clear any existing service worker
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.ready.then(function(registration) {
-                  registration.unregister();
-                });
-              }
-              
-              // Disable any existing service worker
-              if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({type: 'TERMINATE'});
               }
             `,
           }}
@@ -175,9 +135,6 @@ export default function RootLayout({
                   },
                 }}
               />
-              <ClientOnly>
-                <PerformanceOptimizer />
-              </ClientOnly>
               {children}
             </NotificationProvider>
           </AuthProvider>
